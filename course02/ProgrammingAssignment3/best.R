@@ -9,8 +9,8 @@
 ## Requires "dplyr" from the "tidyverse"
 best <- function(state, outcome) {
   ## read outcome and hospital data into two data frames
-  outcome_data <- read.csv("./ProgrammingAssignment3/rprog_data_ProgAssignment3-data/outcome-of-care-measures.csv")
-  hospital_data <- read.csv("./ProgrammingAssignment3/rprog_data_ProgAssignment3-data/hospital-data.csv")
+  outcome_data <- read.csv("./ProgrammingAssignment3/rprog_data_ProgAssignment3-data/outcome-of-care-measures.csv", colClasses = "character")
+  hospital_data <- read.csv("./ProgrammingAssignment3/rprog_data_ProgAssignment3-data/hospital-data.csv", colClasses = "character")
   
   ## convert the three columns of data to a numeric format
   outcome_data[, 11] <- as.numeric(outcome_data[, 11])
