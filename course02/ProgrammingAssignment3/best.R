@@ -1,5 +1,10 @@
-## best is a function that returns the best hospital for the given criteria; in case
+## best is a function that returns the best hospital for the given criteria and state; in case
 ## of a tie, the first hospital by alphabetical order is returned.
+##
+## The criteria are:
+## - heart attack
+## - heart failure
+## - pneumonia
 ##
 ## Requires "dplyr" from the "tidyverse"
 best <- function(state, outcome) {
