@@ -1,6 +1,7 @@
 ## best is a function that returns the best hospital for the given criteria; in case
 ## of a tie, the first hospital by alphabetical order is returned.
-
+##
+## Requires "dplyr" from the "tidyverse"
 best <- function(state, outcome) {
   ## read outcome and hospital data into two data frames
   outcome_data <- read.csv("./ProgrammingAssignment3/rprog_data_ProgAssignment3-data/outcome-of-care-measures.csv")
@@ -45,7 +46,6 @@ best <- function(state, outcome) {
   # rename data from the outcome dataset and only keep needed columns
   outcome_data_cleaned <- outcome_data |>
     rename(provider_id = colnames(outcome_data)[1]) |>
-    rename(hospital_name = colnames(outcome_data)[2]) |>
     rename(heart_attack = colnames(outcome_data)[11]) |>
     rename(heart_failure = colnames(outcome_data)[17]) |>
     rename(pneumonia = colnames(outcome_data)[23]) |>
@@ -55,15 +55,15 @@ best <- function(state, outcome) {
   hospital_data_cleaned <- hospital_data |>
     rename(provider_id = colnames(hospital_data)[1]) |>
     rename(hospital_name = colnames(hospital_data)[2]) |>
-    rename(city = colnames(hospital_data)[6]) |>
-    rename(state = colnames(hospital_data)[7]) |>
-    select(provider_id, hospital_name, city, state)
+    rename(hospital_state = colnames(hospital_data)[7]) |>
+    select(provider_id, hospital_name, hospital_state)
   
   # create a new data frame by merging the two data sets
   full_data <- inner_join(outcome_data_cleaned, hospital_data_cleaned, by="provider_id")
   
   # get the best hospital by desired outcome
   best <- full_data |>
+    filter(hospital_state == state) |>
     arrange(column_name, hospital_name)|>
     slice(1) |>
     select(hospital_name)
