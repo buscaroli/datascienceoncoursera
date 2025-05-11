@@ -1,6 +1,6 @@
 library(tidyverse)
 
-## rankHospital returns a list of hospitals ranked by state and by a user
+## rankhospital returns a list of hospitals ranked by state and by a user
 ## selected outcome.
 ##
 ## The possible outcomes are:
@@ -8,8 +8,12 @@ library(tidyverse)
 ## - heart failure
 ## - pneumonia
 ##
+## The user can decide if he wants a list of top scoring hospitals by passing
+## a numeric value to the variable 'num', or if they prefer the top or worst
+## scoring hospital by passing respectively the string 'best' or 'worst' as
+## the parameter num.
+##
 ## The function also takes into consideration possible ties.
-
 rankhospital <- function(state, outcome, num = "best") {
   ## read outcome and hospital data into two data frames
   outcome_data <- read.csv("./course02/ProgrammingAssignment3/rprog_data_ProgAssignment3-data/outcome-of-care-measures.csv", colClasses = "character")
@@ -139,8 +143,53 @@ rank_hosp_helper <- function(df_hosp, state, outcome, num=1, ascen=TRUE) {
   }
 }
 
+rank_hosp_num <- function(df_hosp, state, outcome, num=1, ascen=TRUE) {
+  top_hospitals <- data_frame()
+  
+  best_scores <- df_hosp |> 
+    filter(hospital_state == state) |> 
+    select(all_of(outcome)) |> 
+    distinct()
+  if (ascen) {
+    best_scores <- sort(best_scores[,outcome])
+    best_scores <- best_scores[1:num]
+    
+    # get the maximum value among the best hospitals     
+    threshold_outcome <- max(best_scores)
+    
+    # get the top "num" hospitals, considering ties
+    top_hospitals <- df_hosp %>%
+      filter(hospital_state == state & !!sym(outcome) <= threshold_outcome) %>% 
+      arrange(!!sym(outcome), hospital_name) %>%
+      select(provider_id, hospital_name, !!sym(outcome))
+    
+  } else {
+    best_scores <- sort(best_scores[,outcome], decreasing = TRUE)
+    best_scores <- best_scores[1:num]
+    
+    # get the minimum value among the worst hospitals
+    threshold_outcome <- min(best_scores)
+    
+    # get the bottom "num" hospitals, considering ties
+    top_hospitals <- df_hosp %>%
+      filter(hospital_state == state & !!sym(outcome) >= threshold_outcome) %>% 
+      arrange(desc(!!sym(outcome)), hospital_name) %>%
+      select(provider_id, hospital_name, !!sym(outcome))
+  }
+  
+  observations_num <- nrow(top_hospitals)
+  top_hospitals$Rank <- seq(1, length.out=observations_num)
+  
+  if (nrow(top_hospitals) < num) {
+    return (NA)
+  } else {
+    return (top_hospitals)
+  }
+}
+
 ## rankhospital("MD", "heart failure", 8)
 ## rankhospital("TX", "heart failure", 4)
 ## rankhospital("MD", "heart attack", "worst")
 ## rankhospital("MD", "heart attack", "best")
 ## rankhospital("MN", "heart attack", 5000)
+## rankhospital("MD", "heart attack", "besssst")
