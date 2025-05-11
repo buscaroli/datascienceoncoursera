@@ -1,3 +1,5 @@
+library(tidyverse)
+
 ## rankHospital returns a list of hospitals ranked by state and by a user
 ## selected outcome.
 ##
@@ -7,8 +9,6 @@
 ## - pneumonia
 ##
 ## The function also takes into consideration possible ties.
-
-library(tidyverse)
 
 rankhospital <- function(state, outcome, num = "best") {
   ## read outcome and hospital data into two data frames
@@ -69,24 +69,78 @@ rankhospital <- function(state, outcome, num = "best") {
   # create a new data frame by merging the two data sets
   full_data <- inner_join(outcome_data_cleaned, hospital_data_cleaned, by="provider_id")
   
-  # get the n top scores
-  best_scores <- full_data |> 
-    filter(hospital_state == state) |> 
-    select(all_of(column_name)) |> 
-    distinct()
-  best_scores <- sort(best_scores[,column_name])
-  best_scores <- best_scores[1:num]
+  # depending on the type of num take different actions
+  is_num <- is.numeric(num)
   
-  # get the maximum allowed score to be in the top num list
-  max_outcome <- max(best_scores)
+  result <- data_frame()
   
-  # get the top "num" hospitals, considering ties
-  top_hospitals <- full_data %>%
-    filter(!!sym(column_name) <= max_outcome) %>% 
-    arrange(!!sym(column_name), hospital_name) %>%
-    select(provider_id, hospital_name, !!sym(column_name)) %>%
-    slice(1:num)
+  # if num is a numeric value
+  if (is_num) {
+    result <- rank_hosp_helper(full_data, state, column_name, num)
     
-  print(top_hospitals)
+  # if numeric is not numeric, check it is either "best" or "worst" and call the
+  # helper function with the appropriate parameters
+  } else {
+    if (num == "best") {
+      result <- rank_hosp_helper(full_data, state, column_name)
+    } else if (num == "worst") {
+      result <- rank_hosp_helper(full_data, state, column_name, num = 1, ascen=FALSE)
+    } else {
+      stop("either enter a number or one of 'best' or 'worst'")
+    }
+  }
+  return(result)
 }
-rankhospital("MD", "heart failure", 10)
+ 
+## rank_hosp_helper is a helper function that takes care of the actual data
+## manipulation of the data frame and that executes the returning logic.
+## It is meant to be called from the rankhospital function.
+rank_hosp_helper <- function(df_hosp, state, outcome, num=1, ascen=TRUE) {
+  top_hospitals <- data_frame()
+  
+  best_scores <- df_hosp |> 
+    filter(hospital_state == state) |> 
+    select(all_of(outcome)) |> 
+    distinct()
+  if (ascen) {
+    best_scores <- sort(best_scores[,outcome])
+    best_scores <- best_scores[1:num]
+    
+    # get the maximum value among the best hospitals     
+    threshold_outcome <- max(best_scores)
+    
+    # get the top "num" hospitals, considering ties
+    top_hospitals <- df_hosp %>%
+      filter(hospital_state == state & !!sym(outcome) <= threshold_outcome) %>% 
+      arrange(!!sym(outcome), hospital_name) %>%
+      select(provider_id, hospital_name, !!sym(outcome))
+    
+  } else {
+    best_scores <- sort(best_scores[,outcome], decreasing = TRUE)
+    best_scores <- best_scores[1:num]
+    
+    # get the minimum value among the worst hospitals
+    threshold_outcome <- min(best_scores)
+    
+    # get the bottom "num" hospitals, considering ties
+    top_hospitals <- df_hosp %>%
+      filter(hospital_state == state & !!sym(outcome) >= threshold_outcome) %>% 
+      arrange(desc(!!sym(outcome)), hospital_name) %>%
+      select(provider_id, hospital_name, !!sym(outcome))
+  }
+  
+  observations_num <- nrow(top_hospitals)
+  top_hospitals$Rank <- seq(1, length.out=observations_num)
+  
+  if (nrow(top_hospitals) < num) {
+    return (NA)
+  } else {
+    return (top_hospitals)
+  }
+}
+
+## rankhospital("MD", "heart failure", 8)
+## rankhospital("TX", "heart failure", 4)
+## rankhospital("MD", "heart attack", "worst")
+## rankhospital("MD", "heart attack", "best")
+## rankhospital("MN", "heart attack", 5000)
