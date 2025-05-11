@@ -9,8 +9,8 @@
 ## Requires "dplyr" from the "tidyverse"
 best <- function(state, outcome) {
   ## read outcome and hospital data into two data frames
-  outcome_data <- read.csv("./ProgrammingAssignment3/rprog_data_ProgAssignment3-data/outcome-of-care-measures.csv", colClasses = "character")
-  hospital_data <- read.csv("./ProgrammingAssignment3/rprog_data_ProgAssignment3-data/hospital-data.csv", colClasses = "character")
+  outcome_data <- read.csv("./course02/ProgrammingAssignment3/rprog_data_ProgAssignment3-data/outcome-of-care-measures.csv", colClasses = "character")
+  hospital_data <- read.csv("./course02/ProgrammingAssignment3/rprog_data_ProgAssignment3-data/hospital-data.csv", colClasses = "character")
   
   ## convert the three columns of data to a numeric format
   outcome_data[, 11] <- as.numeric(outcome_data[, 11])
@@ -67,10 +67,10 @@ best <- function(state, outcome) {
   full_data <- inner_join(outcome_data_cleaned, hospital_data_cleaned, by="provider_id")
   
   # get the best hospital by desired outcome
-  best <- full_data |>
-    filter(hospital_state == state) |>
-    arrange(column_name, hospital_name)|>
-    slice(1) |>
+  best <- full_data %>%
+    filter(hospital_state == state) %>%
+    arrange(!!sym(column_name), hospital_name) %>%
+    slice(1) %>%
     select(hospital_name)
     
   return (best)
