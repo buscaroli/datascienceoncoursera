@@ -108,10 +108,7 @@ print(nonOECD_avg)
 ## How many countries are Lower middle income
 ## but among the 38 nations with highest GDP?
 
-quants = quantile(joint_dt$Ranking, c(0, 0.2, 0.4, 0.5, 0.8, 1.0), na.rm = TRUE)
-##quantiles_dt <- joint_dt %>%
-##                mutate(quants = quantile(joint_dt$Ranking, seq(0, 1, 0.2), na.rm = TRUE))
-##print(quantiles_dt)
+quants = quantile(joint_dt$Ranking, probs = seq(0, 1, 0.20), na.rm = TRUE)
 
 joint_dt$quantGDP <- cut(joint_dt[, Ranking], breaks = quants)
 cross_table <- table(joint_dt$quantGDP, joint_dt$`Income Group`)
