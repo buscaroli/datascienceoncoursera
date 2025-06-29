@@ -49,10 +49,59 @@ gdp_dt <- data.table(gdp)
 ## average them. 
 ## What is the average? 
 
-setnames(gdp_dt, "V5", "GDP") ## rename column
-
+setnames(gdp_dt, "V5", "GDP") ## rename column 5
+setnames(gdp_dt, "V1", "CountryCode") ## rename column 1
 ## remove commas before converting to numeric to avoid getting "NA"
 gdp_dt$GDP <- as.numeric(gsub(",", "", gdp_dt$GDP))
-
 gdp_avg <- gdp_dt %>% summarise(avg_gdp = mean(GDP, na.rm = TRUE))
 
+# Ex 03
+## In the data set from Question 2 what is a regular expression that would 
+## allow you to count the number of countries whose name begins with 
+## "United"? 
+## How many countries begin with United? 
+print(length(grep("^United", gdp_dt$V4)))
+
+# Ex 04
+## Using the data set from Question #2, and the educational data from 
+## "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv", 
+## match the data based on the country shortcode. 
+## Of the countries for which the end of the fiscal year is available, 
+## how many end in June?
+educUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv"
+educDest <- "./data/educ.csv"
+
+## download and import data
+download.file(url = educUrl, destfile = educDest)
+
+educ <- fread(educDest)
+educ_dt <- data.table(educ)
+
+## joining the two data tables by "CountryCode"
+joint_dt <- merge(gdp_dt, educ_dt, by = "CountryCode")
+
+## The column "Special Notes" contains a string that may include the following:
+## "Fiscal year end: June" ...; which is going to be the target substring
+## Note: for this exercise it wasn't really necessary to merge the two datasets
+## as the data needed was all in the educational dataset.
+print(length(grep("^Fiscal year end: June", joint_dt$`Special Notes`)))
+
+# Ex 05
+## You can use the quantmod (http://www.quantmod.com/) package to get 
+## historical stock prices for publicly traded companies 
+## on the NASDAQ and NYSE. Use the following code to download data on 
+## Amazon's stock price and get the times the data was sampled.
+## Use the folloiwng code:
+install.packages("quantmod")
+library(quantmod)
+amzn <- getSymbols("AMZN",auto.assign=FALSE)
+sampleTimes = index(amzn)
+
+## converting the data into lubridate's date format
+dates <- ymd(sampleTimes)
+
+## How many values were collected in 2012? 
+print(sum(year(dates) == 2012))
+
+## How many values were collected on Mondays in 2012?
+print(sum(year(dates) == 2012 & wday(dates) == 2)) # 1 = Sun, 2 = Mon etc.
