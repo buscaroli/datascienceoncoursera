@@ -84,3 +84,6 @@ names(meanStdData) <- gsub("BodyBody", "Body", names(meanStdData))
 summaryDT <- meanStdData %>%
   group_by(SubjectID, Activity) %>%
   summarise(across(everything(), mean, .names = "mean_{.col}"))
+
+## save the summary dataset to a file
+fwrite(summaryDT, "./SummaryDT.csv")
