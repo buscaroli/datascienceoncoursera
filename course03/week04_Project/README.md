@@ -43,7 +43,6 @@ I have also attached a file called "CodeBook.md" with a description of the data.
 ## Libraries
 - tidyverse: contains all the necessary libraries for data processing, in 
   particular dplyr
-- lubridate: for easily working with date and time 
 - data.table: a high performance dataframe
 
 ## Online Data Repository
