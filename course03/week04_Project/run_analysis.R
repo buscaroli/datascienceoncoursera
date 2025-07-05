@@ -86,4 +86,4 @@ summaryDT <- meanStdData %>%
   summarise(across(everything(), mean, .names = "mean_{.col}"))
 
 ## save the summary dataset to a file
-fwrite(summaryDT, "./SummaryDT.csv")
+write.table(summaryDT, "SummaryDT.txt", row.names = FALSE)
