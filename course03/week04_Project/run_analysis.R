@@ -64,7 +64,8 @@ completeData <- cbind(subjects, dataX, dataY)
 ## extract a subset of the data that includes only the mean and std deviation
 meanStdData <- completeData %>% select(subject, activityEnum, contains(c("avg", "std")))
 
-## name the columns of the dataset using the mapping of the activities dataset
+## replace the numerical values of the activityEnum column with the labels from
+## the activities dataset
 meanStdData$activityEnum <- activities[meanStdData$activityEnum, 2]
 
 ## rename the columns to have clear names
